@@ -1,33 +1,75 @@
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+#include <BMA250.h>
+#include <Wire.h>
+#include "BMA250.h"
 
-# Precompiled Headers
-*.gch
-*.pch
+#if defined(ARDUINO_ARCH_SAMD)
+#define SerialMonitorInterface SerialUSB
+#else
+#define SerialMonitorInterface Serial
+#endif
+int BS;
+float MagAccel;
+int FallThresh;
+int x;
+int y;
+int z;
+BMA250 accel;
+void setup() {
+  
+SerialMonitorInterface.begin(9600);
+  Wire.begin();
+  accel.begin(BMA250_range_2g, BMA250_update_time_64ms);//This sets up the BMA250 accelerometer
+  //bluetooth_module
+  //BLEsetup();
+  pinMode(13, OUTPUT);
+  
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+}
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+void loop() {
+  // put your main code here, to run repeatedly:
+  accel.read();
+  x = accel.X;
+  y = accel.Y;
+  z = accel.Z;
+  MagAccel = sqrt((accel.X*accel.X) + (accel.Y*accel.Y) + (accel.Z*accel.Z));
+  
+  //This function gets new data from the accelerometer
+/*
+  if (accel.X < 100)
+  {
+    accel.X = 0 ;
+  }
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
+  if (accel.Y < 100)
+  {
+    accel.Y = 0 ;
+  }
+  if (accel.Z < 100)
+  {
+    accel.Z = 0;
+  }
+ */
+  if (MagAccel>300)
+  {
+    digitalWrite(13, HIGH); 
+  }
+  
+  
+  
+  SerialMonitorInterface.print("X = ");
+  SerialMonitorInterface.print(x);
+  SerialMonitorInterface.print("  ");
+  SerialMonitorInterface.print("Y = ");
+  SerialMonitorInterface.print(y);
+  SerialMonitorInterface.print("  ");
+  SerialMonitorInterface.print("Z = ");
+  SerialMonitorInterface.print(z);
+  SerialMonitorInterface.print("  ");
+  //SerialMonitorInterface.print("Mag = ");
+  //SerialMonitorInterface.print(MagAccel);
+  
+  delay(250);//We'll make sure we're over the 64ms update time set on the BMA250
+  
+  
+}
